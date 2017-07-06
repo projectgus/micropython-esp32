@@ -5,7 +5,7 @@ QSTR_DEFS = qstrdefsport.h
 
 MICROPY_PY_USSL = 0
 MICROPY_SSL_AXTLS = 0
-MICROPY_FATFS = 0
+MICROPY_FATFS = 1 
 MICROPY_PY_BTREE = 0
 
 #FROZEN_DIR = scripts
@@ -147,7 +147,6 @@ SRC_C = \
 	modbadge.c \
 	modugfx.c \
 	moduhashlib.c \
-	espneopixel.c \
 	machine_rtc.c \
 	machine_hw_spi.c \
 	mpthreadport.c \
@@ -343,6 +342,7 @@ ESPIDF_FATFS_O = $(addprefix $(ESPCOMP)/fatfs/src/,\
 	diskio_sdmmc.o \
 	ff.o \
 	option/syscall.o \
+	option/unicode.o \
 	)
 
 ESPIDF_WEAR_LEVELING_O = $(addprefix $(ESPCOMP)/wear_levelling/,\

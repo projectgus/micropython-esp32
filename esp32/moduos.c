@@ -29,8 +29,6 @@
 
 #include <string.h>
 
-#include "esp_vfs.h"
-#include "esp_vfs_fat.h"
 #include "esp_system.h"
 
 #include "py/mpconfig.h"
@@ -38,7 +36,8 @@
 #include "py/objstr.h"
 #include "py/runtime.h"
 #include "py/mperrno.h"
-
+#include "extmod/vfs.h"
+#include "extmod/vfs_fat.h"
 #include "genhdr/mpversion.h"
 
 extern const mp_obj_type_t mp_fat_vfs_type;
@@ -94,49 +93,6 @@ STATIC mp_obj_t os_dupterm_notify(mp_obj_t obj_in) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(os_dupterm_notify_obj, os_dupterm_notify);
 #endif
 
-// VFS ESP-IDF
-
-// Handle of the wear levelling library instance
-static wl_handle_t s_wl_handle = WL_INVALID_HANDLE;
-
-// allow format partition in case if it is new one and was not formated before
-const esp_vfs_fat_mount_config_t mount_config = {
-      .max_files = 4,
-      .format_if_mount_failed = true
-};
-
-mp_obj_t mp_vfs_mount(size_t n_args, const mp_obj_t *pos_args, mp_map_t *kw_args) {
-    // get the mount point
-    size_t len;
-    const char *mnt_str = mp_obj_str_get_data(pos_args[1], &len);
-    // get the blockdev name
-    const char *dev_str = mp_obj_str_get_data(pos_args[0], &len);
-
-    esp_err_t err = esp_vfs_fat_spiflash_mount(mnt_str, dev_str, &mount_config, &s_wl_handle);
-    if (err != ESP_OK) {
-      mp_raise_OSError(MP_EINVAL);
-    }
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_KW(mp_vfs_mount_obj, 2, mp_vfs_mount);
-
-
-mp_obj_t mp_vfs_umount(mp_obj_t mnt_in) {
-    size_t len;
-    const char *mnt_str = NULL;
-    if (MP_OBJ_IS_STR(mnt_in)) {
-        mnt_str = mp_obj_str_get_data(mnt_in, &len);
-    } else {
-      mp_raise_OSError(MP_EINVAL);
-    }
-
-    ESP_ERROR_CHECK(esp_vfs_fat_spiflash_unmount(mnt_str, s_wl_handle));
-    return mp_const_none;
-}
-MP_DEFINE_CONST_FUN_OBJ_1(mp_vfs_umount_obj, mp_vfs_umount);
-
-// Exports
-
 STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_uos) },
     { MP_ROM_QSTR(MP_QSTR_uname), MP_ROM_PTR(&os_uname_obj) },
@@ -145,19 +101,23 @@ STATIC const mp_rom_map_elem_t os_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_dupterm), MP_ROM_PTR(&mp_uos_dupterm_obj) },
     { MP_ROM_QSTR(MP_QSTR_dupterm_notify), MP_ROM_PTR(&os_dupterm_notify_obj) },
     #endif
-    // { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&mp_vfs_ilistdir_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&mp_vfs_listdir_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&mp_vfs_mkdir_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&mp_vfs_rmdir_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&mp_vfs_chdir_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_getcwd), MP_ROM_PTR(&mp_vfs_getcwd_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&mp_vfs_remove_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&mp_vfs_rename_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&mp_vfs_stat_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&mp_vfs_statvfs_obj) },
+    #if MICROPY_VFS
+    { MP_ROM_QSTR(MP_QSTR_ilistdir), MP_ROM_PTR(&mp_vfs_ilistdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_listdir), MP_ROM_PTR(&mp_vfs_listdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_mkdir), MP_ROM_PTR(&mp_vfs_mkdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rmdir), MP_ROM_PTR(&mp_vfs_rmdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_chdir), MP_ROM_PTR(&mp_vfs_chdir_obj) },
+    { MP_ROM_QSTR(MP_QSTR_getcwd), MP_ROM_PTR(&mp_vfs_getcwd_obj) },
+    { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&mp_vfs_remove_obj) },
+    { MP_ROM_QSTR(MP_QSTR_rename), MP_ROM_PTR(&mp_vfs_rename_obj) },
+    { MP_ROM_QSTR(MP_QSTR_stat), MP_ROM_PTR(&mp_vfs_stat_obj) },
+    { MP_ROM_QSTR(MP_QSTR_statvfs), MP_ROM_PTR(&mp_vfs_statvfs_obj) },
     { MP_ROM_QSTR(MP_QSTR_mount), MP_ROM_PTR(&mp_vfs_mount_obj) },
     { MP_ROM_QSTR(MP_QSTR_umount), MP_ROM_PTR(&mp_vfs_umount_obj) },
-    // { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
+    #if MICROPY_VFS_FAT
+    { MP_ROM_QSTR(MP_QSTR_VfsFat), MP_ROM_PTR(&mp_fat_vfs_type) },
+    #endif
+    #endif
 };
 
 STATIC MP_DEFINE_CONST_DICT(os_module_globals, os_module_globals_table);
