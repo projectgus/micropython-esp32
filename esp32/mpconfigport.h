@@ -52,8 +52,8 @@
 #define MICROPY_USE_INTERNAL_PRINTF         (0) // ESP32 SDK requires its own printf
 #define MICROPY_ENABLE_SCHEDULER            (1)
 #define MICROPY_SCHEDULER_DEPTH             (8)
-#define MICROPY_VFS                         (1)
-#define MICROPY_VFS_FAT                     (1)
+#define MICROPY_VFS                         (0)
+#define MICROPY_VFS_FAT                     (0)
 
 // control over Python builtins
 #define MICROPY_PY_BUILTINS_INPUT           (1)

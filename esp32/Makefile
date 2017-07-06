@@ -5,7 +5,7 @@ QSTR_DEFS = qstrdefsport.h
 
 MICROPY_PY_USSL = 0
 MICROPY_SSL_AXTLS = 0
-MICROPY_FATFS = 1
+MICROPY_FATFS = 0
 MICROPY_PY_BTREE = 0
 
 #FROZEN_DIR = scripts
@@ -85,6 +85,10 @@ INC += -I$(ESPCOMP)/mbedtls/include
 INC += -I$(ESPCOMP)/mbedtls/port/include
 INC += -I$(ESPCOMP)/spi_flash/include
 INC += -I$(ESPCOMP)/vfs/include
+INC += -I$(ESPCOMP)/fatfs/src
+INC += -I$(ESPCOMP)/sdmmc/include
+INC += -I$(ESPCOMP)/wear_levelling/include
+INC += -I$(ESPCOMP)/wear_levelling/private_include
 INC += -I$(ESPCOMP)/newlib/platform_include
 INC += -I$(ESPCOMP)/xtensa-debug-module/include
 INC += -I$(ESPCOMP)/wpa_supplicant/include
@@ -126,7 +130,6 @@ SRC_C = \
 	uart.c \
 	gccollect.c \
 	mphalport.c \
-	fatfs_port.c \
 	help.c \
 	modutime.c \
 	moduos.c \
@@ -329,6 +332,25 @@ ESPIDF_FREERTOS_O = $(addprefix $(ESPCOMP)/freertos/,\
 ESPIDF_VFS_O = $(addprefix $(ESPCOMP)/vfs/,\
 	vfs_uart.o \
 	vfs.o \
+	)
+
+ESPIDF_FATFS_O = $(addprefix $(ESPCOMP)/fatfs/src/,\
+	vfs_fat.o \
+	vfs_fat_spiflash.o \
+	vfs_fat_sdmmc.o \
+	diskio.o \
+	diskio_spiflash.o \
+	diskio_sdmmc.o \
+	ff.o \
+	option/syscall.o \
+	)
+
+ESPIDF_WEAR_LEVELING_O = $(addprefix $(ESPCOMP)/wear_levelling/,\
+	wear_levelling.o \
+	WL_Flash.o \
+	SPI_Flash.o \
+	Partition.o \
+	crc32.o \
 	)
 
 ESPIDF_JSON_O = $(addprefix $(ESPCOMP)/json/,\
@@ -573,7 +595,9 @@ OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_ETHERNET_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_APP_TRACE_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_EXPAT_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_FREERTOS_O))
+OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_FATFS_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_VFS_O))
+OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_WEAR_LEVELING_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_JSON_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_LOG_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_LWIP_O))
