@@ -30,7 +30,7 @@
 #include <string.h>
 #include "py/nlr.h"
 #include "py/runtime.h"
-#include "lib/oofatfs/ff.h"
+#include "ff.h"
 #include "extmod/vfs_fat.h"
 #include "py/lexer.h"
 

@@ -30,14 +30,16 @@
 #include "py/mpconfig.h"
 #if MICROPY_VFS && MICROPY_VFS_FAT
 
-#include <stdint.h>
+// #include <stdint.h>
 #include <stdio.h>
 
 #include "py/mphal.h"
 
 #include "py/runtime.h"
-#include "lib/oofatfs/ff.h"
-#include "lib/oofatfs/diskio.h"
+
+#include "ff.h"
+#include "diskio.h"
+
 #include "extmod/vfs_fat.h"
 
 #if _MAX_SS == _MIN_SS

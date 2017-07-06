@@ -38,60 +38,60 @@
 #include "py/runtime.h"
 #include "rom/rtc.h"
 
-STATIC mp_obj_t esp_flash_read(mp_obj_t offset_in, mp_obj_t buf_in) {
-  mp_int_t offset = mp_obj_get_int(offset_in);
-  mp_buffer_info_t bufinfo;
-  mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
-  esp_err_t res = spi_flash_read(offset, bufinfo.buf, bufinfo.len);
-  if (res != ESP_OK) {
-    mp_raise_OSError(MP_EIO);
-  }
-  return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_read_obj, esp_flash_read);
-
-STATIC mp_obj_t esp_flash_write(mp_obj_t offset_in, mp_obj_t buf_in) {
-  mp_int_t offset = mp_obj_get_int(offset_in);
-  mp_buffer_info_t bufinfo;
-  mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
-  esp_err_t res = spi_flash_write(offset, bufinfo.buf, bufinfo.len);
-  if (res != ESP_OK) {
-    mp_raise_OSError(MP_EIO);
-  }
-  return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_write_obj, esp_flash_write);
-
-STATIC mp_obj_t esp_flash_erase(mp_obj_t sector_in) {
-  mp_int_t sector = mp_obj_get_int(sector_in);
-  esp_err_t res = spi_flash_erase_sector(sector);
-  if (res != ESP_OK) {
-    mp_raise_OSError(MP_EIO);
-  }
-  return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_flash_erase_obj, esp_flash_erase);
-
-STATIC mp_obj_t esp_flash_size(void) {
-  return mp_obj_new_int_from_uint(spi_flash_get_chip_size());
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_size_obj, esp_flash_size);
-
-STATIC mp_obj_t esp_flash_user_start(void) {
-  return MP_OBJ_NEW_SMALL_INT(0x200000);
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_user_start_obj,
-                                 esp_flash_user_start);
-
-STATIC mp_obj_t esp_neopixel_write_(mp_obj_t pin, mp_obj_t buf,
-                                    mp_obj_t timing) {
-  mp_buffer_info_t bufinfo;
-  mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
-  esp_neopixel_write(mp_hal_get_pin_obj(pin), (uint8_t *)bufinfo.buf,
-                     bufinfo.len, mp_obj_get_int(timing));
-  return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_neopixel_write_obj, esp_neopixel_write_);
+// STATIC mp_obj_t esp_flash_read(mp_obj_t offset_in, mp_obj_t buf_in) {
+//   mp_int_t offset = mp_obj_get_int(offset_in);
+//   mp_buffer_info_t bufinfo;
+//   mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_WRITE);
+//   esp_err_t res = spi_flash_read(offset, bufinfo.buf, bufinfo.len);
+//   if (res != ESP_OK) {
+//     mp_raise_OSError(MP_EIO);
+//   }
+//   return mp_const_none;
+// }
+// STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_read_obj, esp_flash_read);
+//
+// STATIC mp_obj_t esp_flash_write(mp_obj_t offset_in, mp_obj_t buf_in) {
+//   mp_int_t offset = mp_obj_get_int(offset_in);
+//   mp_buffer_info_t bufinfo;
+//   mp_get_buffer_raise(buf_in, &bufinfo, MP_BUFFER_READ);
+//   esp_err_t res = spi_flash_write(offset, bufinfo.buf, bufinfo.len);
+//   if (res != ESP_OK) {
+//     mp_raise_OSError(MP_EIO);
+//   }
+//   return mp_const_none;
+// }
+// STATIC MP_DEFINE_CONST_FUN_OBJ_2(esp_flash_write_obj, esp_flash_write);
+//
+// STATIC mp_obj_t esp_flash_erase(mp_obj_t sector_in) {
+//   mp_int_t sector = mp_obj_get_int(sector_in);
+//   esp_err_t res = spi_flash_erase_sector(sector);
+//   if (res != ESP_OK) {
+//     mp_raise_OSError(MP_EIO);
+//   }
+//   return mp_const_none;
+// }
+// STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_flash_erase_obj, esp_flash_erase);
+//
+// STATIC mp_obj_t esp_flash_size(void) {
+//   return mp_obj_new_int_from_uint(spi_flash_get_chip_size());
+// }
+// STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_size_obj, esp_flash_size);
+//
+// STATIC mp_obj_t esp_flash_user_start(void) {
+//   return MP_OBJ_NEW_SMALL_INT(0x200000);
+// }
+// STATIC MP_DEFINE_CONST_FUN_OBJ_0(esp_flash_user_start_obj,
+//                                  esp_flash_user_start);
+//
+// STATIC mp_obj_t esp_neopixel_write_(mp_obj_t pin, mp_obj_t buf,
+//                                     mp_obj_t timing) {
+//   mp_buffer_info_t bufinfo;
+//   mp_get_buffer_raise(buf, &bufinfo, MP_BUFFER_READ);
+//   esp_neopixel_write(mp_hal_get_pin_obj(pin), (uint8_t *)bufinfo.buf,
+//                      bufinfo.len, mp_obj_get_int(timing));
+//   return mp_const_none;
+// }
+// STATIC MP_DEFINE_CONST_FUN_OBJ_3(esp_neopixel_write_obj, esp_neopixel_write_);
 
 STATIC mp_obj_t esp_rtcmem_write_(mp_obj_t pos, mp_obj_t val) {
   esp_rtcmem_write(mp_obj_get_int(pos), mp_obj_get_int(val));
@@ -126,14 +126,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(esp_start_sleeping_obj, esp_start_sleeping_);
 STATIC const mp_rom_map_elem_t esp_module_globals_table[] = {
     {MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_esp)},
 
-    {MP_ROM_QSTR(MP_QSTR_flash_read), MP_ROM_PTR(&esp_flash_read_obj)},
-    {MP_ROM_QSTR(MP_QSTR_flash_write), MP_ROM_PTR(&esp_flash_write_obj)},
-    {MP_ROM_QSTR(MP_QSTR_flash_erase), MP_ROM_PTR(&esp_flash_erase_obj)},
-    {MP_ROM_QSTR(MP_QSTR_flash_size), MP_ROM_PTR(&esp_flash_size_obj)},
-    {MP_ROM_QSTR(MP_QSTR_flash_user_start),
-     MP_ROM_PTR(&esp_flash_user_start_obj)},
-
-    {MP_ROM_QSTR(MP_QSTR_neopixel_write), MP_ROM_PTR(&esp_neopixel_write_obj)},
+    // {MP_ROM_QSTR(MP_QSTR_flash_read), MP_ROM_PTR(&esp_flash_read_obj)},
+    // {MP_ROM_QSTR(MP_QSTR_flash_write), MP_ROM_PTR(&esp_flash_write_obj)},
+    // {MP_ROM_QSTR(MP_QSTR_flash_erase), MP_ROM_PTR(&esp_flash_erase_obj)},
+    // {MP_ROM_QSTR(MP_QSTR_flash_size), MP_ROM_PTR(&esp_flash_size_obj)},
+    // {MP_ROM_QSTR(MP_QSTR_flash_user_start),
+    //  MP_ROM_PTR(&esp_flash_user_start_obj)},
+    //
+    // {MP_ROM_QSTR(MP_QSTR_neopixel_write), MP_ROM_PTR(&esp_neopixel_write_obj)},
 
     {MP_ROM_QSTR(MP_QSTR_rtcmem_write), MP_ROM_PTR(&esp_rtcmem_write_obj)},
     {MP_ROM_QSTR(MP_QSTR_rtcmem_read), MP_ROM_PTR(&esp_rtcmem_read_obj)},

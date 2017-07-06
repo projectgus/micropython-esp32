@@ -31,7 +31,7 @@ ESPTOOL ?= $(ESPCOMP)/esptool_py/esptool/esptool.py
 BADGE = $(IDF_PATH)/..
 
 # verify the ESP IDF version
-ESPIDF_SUPHASH := 9b955f4c9f1b32652ea165d3e4cdaad01bba170e
+ESPIDF_SUPHASH := a3b3f4efbf2051bc1e5cbe906fb7b5695472967e
 ESPIDF_CURHASH := $(shell git -C $(ESPIDF) show -s --pretty=format:'%H')
 ifneq ($(ESPIDF_CURHASH),$(ESPIDF_SUPHASH))
 $(info ** WARNING **)
@@ -85,6 +85,10 @@ INC += -I$(ESPCOMP)/mbedtls/include
 INC += -I$(ESPCOMP)/mbedtls/port/include
 INC += -I$(ESPCOMP)/spi_flash/include
 INC += -I$(ESPCOMP)/vfs/include
+INC += -I$(ESPCOMP)/fatfs/src
+INC += -I$(ESPCOMP)/sdmmc/include
+INC += -I$(ESPCOMP)/wear_levelling/include
+INC += -I$(ESPCOMP)/wear_levelling/private_include
 INC += -I$(ESPCOMP)/newlib/platform_include
 INC += -I$(ESPCOMP)/xtensa-debug-module/include
 INC += -I$(ESPCOMP)/wpa_supplicant/include
@@ -126,7 +130,6 @@ SRC_C = \
 	uart.c \
 	gccollect.c \
 	mphalport.c \
-	fatfs_port.c \
 	help.c \
 	modutime.c \
 	moduos.c \
@@ -144,7 +147,6 @@ SRC_C = \
 	modbadge.c \
 	modugfx.c \
 	moduhashlib.c \
-	espneopixel.c \
 	machine_rtc.c \
 	machine_hw_spi.c \
 	mpthreadport.c \
@@ -196,12 +198,6 @@ LIB_SRC_C = $(addprefix lib/,\
 	utils/interrupt_char.c \
  	utils/sys_stdio_mphal.c \
 	)
-
-ifeq ($(MICROPY_FATFS), 1)
-LIB_SRC_C += \
-	lib/oofatfs/ff.c \
-	lib/oofatfs/option/unicode.c
-endif
 
 DRIVERS_SRC_C = $(addprefix drivers/,\
 	dht/dht.c \
@@ -329,6 +325,26 @@ ESPIDF_FREERTOS_O = $(addprefix $(ESPCOMP)/freertos/,\
 ESPIDF_VFS_O = $(addprefix $(ESPCOMP)/vfs/,\
 	vfs_uart.o \
 	vfs.o \
+	)
+
+ESPIDF_FATFS_O = $(addprefix $(ESPCOMP)/fatfs/src/,\
+	ff.o \
+	vfs_fat.o \
+	vfs_fat_spiflash.o \
+	vfs_fat_sdmmc.o \
+	diskio.o \
+	diskio_spiflash.o \
+	diskio_sdmmc.o \
+	ffsystem.o \
+	ffunicode.o \
+	)
+
+ESPIDF_WEAR_LEVELING_O = $(addprefix $(ESPCOMP)/wear_levelling/,\
+	wear_levelling.o \
+	WL_Flash.o \
+	SPI_Flash.o \
+	Partition.o \
+	crc32.o \
 	)
 
 ESPIDF_JSON_O = $(addprefix $(ESPCOMP)/json/,\
@@ -578,6 +594,8 @@ OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_APP_TRACE_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_EXPAT_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_FREERTOS_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_VFS_O))
+OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_FATFS_O))
+OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_WEAR_LEVELING_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_JSON_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_LOG_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_LWIP_O))

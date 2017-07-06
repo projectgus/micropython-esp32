@@ -34,7 +34,9 @@
 #include "py/runtime.h"
 #include "py/stream.h"
 #include "py/mperrno.h"
-#include "lib/oofatfs/ff.h"
+
+#include "ff.h"
+
 #include "extmod/vfs_fat.h"
 
 #define mp_type_fileio fatfs_type_fileio

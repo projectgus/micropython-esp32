@@ -26,7 +26,7 @@
 
 #include "py/lexer.h"
 #include "py/obj.h"
-#include "lib/oofatfs/ff.h"
+#include "ff.h"
 #include "extmod/vfs.h"
 
 // these are the values for fs_user_mount_t.flags
