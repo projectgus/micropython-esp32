@@ -16,10 +16,12 @@ include ../py/py.mk
 
 PORT ?= /dev/ttyUSB0
 BAUD ?= 460800
+MONITOR_BAUD ?= 115200
 FLASH_MODE ?= dio
 FLASH_FREQ ?= 40m
 FLASH_SIZE ?= 16MB
 CROSS_COMPILE ?= xtensa-esp32-elf-
+DEPLOY_ERASE_RESET ?= reset
 
 # paths to ESP IDF and its components
 ifeq ($(IDF_PATH),)
@@ -29,6 +31,8 @@ ESPIDF = $(IDF_PATH)
 ESPCOMP = $(ESPIDF)/components
 ESPTOOL ?= $(ESPCOMP)/esptool_py/esptool/esptool.py
 BADGE = $(IDF_PATH)/..
+ESPMONITOR ?= $(ESPIDF)/tools/idf_monitor.py
+MONITOR_OPTS := --baud $(MONITOR_BAUD) --port $(PORT) --toolchain-prefix $(CROSS_COMPILE)
 
 # verify the ESP IDF version
 ESPIDF_SUPHASH := c9c8840c88f966e4c25e29051936abb46fac8bb3
@@ -95,6 +99,7 @@ INC += -I$(ESPCOMP)/app_trace/include
 INC += -I$(ESPCOMP)/freertos/include/freertos
 INC += -I$(ESPCOMP)/app_update/include
 INC += -I$(ESPCOMP)/bootloader_support/include_priv
+INC += -I$(ESPCOMP)/sdmmc/include
 
 CFLAGS = -std=gnu99 -Os -ffunction-sections -fdata-sections -fstrict-volatile-bitfields -mlongcalls -nostdlib -Wall -Wno-error=unused-function -Wno-error=unused-but-set-variable -Wno-error=unused-variable -Wno-error=deprecated-declarations -DMBEDTLS_CONFIG_FILE='"mbedtls/esp_config.h"' -DHAVE_CONFIG_H -DESP_PLATFORM  $(INC)
 CFLAGS += -DIDF_VER=\"$(IDF_VER)\"
@@ -156,6 +161,7 @@ SRC_C = \
 	ugfx_containers.c \
 	ugfx_widgets.c \
 	ugfx_styles.c \
+	timeutils_epoch.c \
 	$(SRC_MOD)
 
 ### TODO fix hardcoded images when we can't get image loader to work
@@ -236,6 +242,8 @@ ESPIDF_DRIVER_O = $(addprefix $(ESPCOMP)/driver/,\
 	spi_master.o \
 	spi_common.o \
 	rtc_module.o \
+	sdmmc_host.o \
+	sdmmc_transaction.o \
 	)
 
 $(BUILD)/$(ESPCOMP)/esp32/dport_access.o: CFLAGS += -Wno-array-bounds
@@ -427,6 +435,10 @@ ESPIDF_WEAR_LEVELLING_O = $(addprefix $(ESPCOMP)/wear_levelling/,\
 	SPI_Flash.o \
 	)
 
+ESPIDF_SDMMC_O = $(addprefix $(ESPCOMP)/sdmmc/,\
+	sdmmc_cmd.o \
+	)
+
 $(BUILD)/$(ESPCOMP)/lwip/%.o: CFLAGS += -Wno-address -Wno-unused-variable -Wno-unused-but-set-variable
 ESPIDF_LWIP_O = $(addprefix $(ESPCOMP)/lwip/,\
 	api/pppapi.o \
@@ -611,6 +623,7 @@ OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_NVS_FLASH_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_OPENSSL_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_SPI_FLASH_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_WEAR_LEVELLING_O))
+OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_SDMMC_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_WPA_SUPPLICANT_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_APP_UPDATE_O))
 OBJ_ESPIDF += $(addprefix $(BUILD)/, $(ESPIDF_BOOTLOADER_O))
@@ -654,7 +667,7 @@ OBJ_ESPIDF += $(addprefix $(BUILD)/, $(BADGE_COMPONENTS_O))
 
 all: $(BUILD)/firmware.bin
 
-.PHONY: idf-version deploy erase
+.PHONY: idf-version deploy erase monitor
 
 idf-version:
 	$(ECHO) "ESP IDF supported hash: $(ESPIDF_SUPHASH)"
@@ -665,11 +678,14 @@ $(BUILD)/firmware.bin: $(BUILD)/bootloader.bin $(BUILD)/partitions.bin $(BUILD)/
 
 deploy: $(BUILD)/firmware.bin
 	$(ECHO) "Writing $^ to the board"
-	$(Q)$(ESPTOOL) --chip esp32 --port $(PORT) --baud $(BAUD) write_flash -z --flash_mode $(FLASH_MODE) --flash_freq $(FLASH_FREQ) --flash_size $(FLASH_SIZE) 0 $^
+	$(Q)$(ESPTOOL) --chip esp32 --port $(PORT) --baud $(BAUD) --after $(DEPLOY_ERASE_RESET) write_flash -z --flash_mode $(FLASH_MODE) --flash_freq $(FLASH_FREQ) --flash_size $(FLASH_SIZE) 0 $^
 
 erase:
 	$(ECHO) "Erasing flash"
-	$(Q)$(ESPTOOL) --chip esp32 --port $(PORT) --baud $(BAUD) erase_flash
+	$(Q)$(ESPTOOL) --chip esp32 --port $(PORT) --baud $(BAUD) --after $(DEPLOY_ERASE_RESET) erase_flash
+
+monitor:
+	$(ESPMONITOR) $(MONITOR_OPTS) $(BUILD)/application.elf
 
 ################################################################################
 # Declarations to build the application
