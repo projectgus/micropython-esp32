@@ -11,6 +11,7 @@ def setup_services():
     except OSError:
         print("[SPLASH] Can't setup services: no lib folder!")
         return False
+    status = True
     for app in apps:
         try:
             files = uos.listdir('lib/'+app)
