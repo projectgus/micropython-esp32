@@ -464,9 +464,9 @@ def load_settings():
     global battery_volt_min
     battery_volt_min = badge.nvs_get_u16('splash', 'battery.volt.min', 3600) # mV
     global battery_volt_max
-    battery_volt_max = badge.nvs_get_u16('splash', 'battery.volt.max', 4200) # mV
+    battery_volt_max = badge.nvs_get_u16('splash', 'battery.volt.max', 4150) # mV
     global battery_percent_empty
-    battery_percent_empty = badge.nvs_get_u8('splash', 'battery.percent.empty', 17) # %
+    battery_percent_empty = badge.nvs_get_u8('splash', 'battery.percent.empty', 18) # %
     global ntp_timeout
     ntp_timeout = badge.nvs_get_u8('splash', 'ntp.timeout', 40) #amount of tries
     global bpp_after_count
