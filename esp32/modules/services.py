@@ -16,7 +16,7 @@ import deepsleep
 import ugfx
 import badge
 import machine
-import logging
+import sys
 
 services = [] #List containing all the service objects
 loopCallbacks = {} #Dict containing: {<FUNCTION>:<Wifi required on next run>}
@@ -173,8 +173,9 @@ def loop_timer_callback(tmr):
         rqi = 0
         try:
             rqi = cb()
-        except BaseException as msg:
-            print("[SERVICES] Exception in service loop: ", msg)
+        except BaseException as e:
+            print("[SERVICES] Exception in service loop")
+            sys.print_exception(e)
             newLoopCallbacks.pop(cb)
             continue
         if rqi>0 and rqi<requestedInterval:
@@ -197,8 +198,9 @@ def loop_timer_callback(tmr):
         if pmCallback(requestedInterval):
             print("[SERVICES] Loop timer (re-)started")
             tmr.init(period=requestedInterval*1000, mode=machine.Timer.ONE_SHOT, callback=loop_timer_callback)
-    except:
+    except BaseException as e:
         print("[SERVICES] Error in power management callback!")
+        sys.print_exception(e)
 
 def draw_timer_callback(tmr):
     global drawCallback #The function that allows us to hook into our host
@@ -215,8 +217,9 @@ def draw_timer_callback(tmr):
         try:
             [rqi, space_used] = cb(y)
             y = y - space_used
-        except BaseException as msg:
-            print("[SERVICES] Exception in service draw: ", msg)
+        except BaseException as e:
+            print("[SERVICES] Exception in service draw")
+            sys.print_exception(e)
             newDrawCallbacks.pop(i)
             continue
         if rqi>0 and rqi<requestedInterval:
@@ -257,5 +260,6 @@ def force_draw(disableTimer):
             try:
                 [rqi, space_used] = cb(y)
                 y = y - space_used
-            except BaseException as msg:
-                print("[SERVICES] Exception in service draw: ", msg)
+            except BaseException as e:
+                print("[SERVICES] Exception in service draw")
+                sys.print_exception(e)
