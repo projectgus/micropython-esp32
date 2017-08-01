@@ -25,7 +25,6 @@ def enable(showStatus=True):
                     easydraw.msg("Error: could not connect!")
                 nw.active(False)
                 return False
-        state = True
         if showStatus:
             easydraw.msg("Connected!")
     return True
