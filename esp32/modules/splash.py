@@ -172,7 +172,9 @@ pm.feed()
 
 ber.enable()
 
-print("----")
-print("WARNING: POWER MANAGEMENT ACTIVE")
-print("To use shell type 'import shell' within 5 seconds.")
-print("----")
+if badge.nvs_get_u8('badge', 'usb_stay_awake', 0) == 0:
+    print("----")
+    print("WARNING: POWER MANAGEMENT ACTIVE")
+    print("To disable when on USB, run badge.nvs_set_u8('badge', 'usb_stay_awake', 1)")
+    print("Or use 'import shell' to run a standalone fresh shell")
+    print("----")
